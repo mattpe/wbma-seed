@@ -22,6 +22,7 @@ module.exports = function(grunt) {
     // Minify and add a banner comment to app js file:
     uglify: {
       options: {
+        mangle: false, // Breaks angular if true (default) 
         banner: '/** <%= pkg.name %> v<%= pkg.version %> build <%= grunt.template.today("yyyy-mm-dd") %> */\n'
       },
       build: {
