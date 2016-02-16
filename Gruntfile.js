@@ -1,28 +1,34 @@
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
   // Project configuration
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
-    // Concatenate all vendor scripts to vendor.js and app scripts to app.js 
+    // Concatenate JS files, two tasks: vendor & app
     concat: {
       options: {},
+      // Concatenate all vendor scripts to vendor.js 
       vendor: {
         src: [
               'bower_components/jquery/dist/jquery.min.js',
               'bower_components/bootstrap/dist/js/bootstrap.min.js',
               'bower_components/angular/angular.min.js'
+              // Add all JS libraries you want to include in you build to this array 
              ],
         dest: 'build/vendor.js'
       },
+      // Concatenate all your own app scripts to app.js
       app: {
-        src: ['src/**/*.js'],
+        src: [
+          'src/**/*.module.js', // make sure that modules are set before adding controllers etc.
+          'src/**/*.js'
+        ],
         dest: 'build/app.js'
       }
     },
     // Minify and add a banner comment to app js file:
     uglify: {
       options: {
-        mangle: false, // Breaks angular if true (default) 
+        mangle: false, // This breaks angular injections made without array syntax if true (default) 
         banner: '/** <%= pkg.name %> v<%= pkg.version %> build <%= grunt.template.today("yyyy-mm-dd") %> */\n'
       },
       build: {
@@ -42,25 +48,29 @@ module.exports = function(grunt) {
         }
       }
     },
-    // Copy specified files to build folder:
+    // Copy specified files to build folder
+    // two separate tasks: one for css and one for html files
     copy: {
       css: {
         files: [{
           expand: true,
           flatten: true,
-          src: ['bower_components/bootstrap/dist/css/bootstrap.min.css',
-                'src/**/*.css'],
+          src: [
+            'bower_components/bootstrap/dist/css/bootstrap.min.css',
+            'src/**/*.css'
+          ],
           dest: 'build/css/'
         }]
-      },      
+      },
       html: {
         files: [{
           expand: true,
-          flatten: true,
-          src: ['src/**/*.html'],
+          cwd: 'src/',
+          src: ['./**/*.html'],
           dest: 'build/'
         }],
         options: {
+          // Modify html file contents when copied
           process: function (content, srcpath) {
             // Remove all html comments
             content = content.replace(/<!--[\s\S]*?-->\s*\n*/g, "");
@@ -69,8 +79,10 @@ module.exports = function(grunt) {
             // Remove all script elements
             content = content.replace(/<script.*script>\s*\n*/g, "");
             // Add concatenated js files just before closing body tag
-            content = content.replace(/<\/body>/, '<script src="vendor.js"></script>\n' +
-                                      '<script src="app.min.js"></script>\n</body>');
+            content = content.replace(/<\/body>/,
+                    '<script src="vendor.js"></script>\n' +
+                    '<script src="app.min.js"></script>\n' +
+                    '</body>');
             return content;
           }
         }
