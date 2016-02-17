@@ -1,4 +1,4 @@
-angular.module('myApp', ['myModule'])
+angular.module('app')
 .controller('GreetingsController', function () {
   this.greeting = "Hello, you!";
   this.who = "Angular";
