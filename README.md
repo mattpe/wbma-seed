@@ -12,7 +12,7 @@ Project starting point template for Web Based Mobile Applications course.
 4. Run `npm install && bower install` 
 5. Develop in _src/_ folder
 6. Check and update _Gruntfile.js_ if needed
-7. Build using `grunt` command
+7. Build using `grunt build` command
 8. Deploy your _build/_ folder
 
 ## Cordova stuff (Android)
@@ -30,5 +30,13 @@ cordova build
 cordova run android
 
 ```
+
+### or with grunt
+
+1. Check `cordovacli` task in Gruntfile. 
+2. Create Cordova project: `grunt cordova`
+3. Build your app, copy stuff to cordova project, build android app and run it on device: `grunt run`
+
+---
 
 To debug android device on a browser, go to [chrome://inspect](chrome://inspect/#devices). Full instructions: https://developers.google.com/web/tools/chrome-devtools/debug/remote-debugging/remote-debugging

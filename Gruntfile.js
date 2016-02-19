@@ -3,6 +3,14 @@ module.exports = function (grunt) {
   // Project configuration
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
+    // Clean all generated files
+    clean: {
+      build: ['build/*'],
+      cordova: [
+                'cordova/www/*',
+                '!cordova/www/img'
+               ]
+    },
     // Concatenate JS files, two tasks: vendor & app
     concat: {
       options: {},
@@ -62,6 +70,18 @@ module.exports = function (grunt) {
           dest: 'build/css/'
         }]
       },
+      fonts: {
+        files: [{
+          expand: true,
+          flatten: true,
+          src: [
+            'bower_components/bootstrap/fonts/glyphicons-halflings-regular.ttf',
+            'bower_components/bootstrap/fonts/glyphicons-halflings-regular.woff',
+            'bower_components/bootstrap/fonts/glyphicons-halflings-regular.woff2'
+          ],
+          dest: 'build/fonts/'
+        }]
+      },
       html: {
         files: [{
           expand: true,
@@ -80,11 +100,48 @@ module.exports = function (grunt) {
             content = content.replace(/<script.*script>\s*\n*/g, "");
             // Add concatenated js files just before closing body tag
             content = content.replace(/<\/body>/,
-                    '<script src="vendor.js"></script>\n' +
-                    '<script src="app.min.js"></script>\n' +
-                    '</body>');
+              '<script src="cordova.js"></script>\n' +
+              '<script src="vendor.js"></script>\n' +
+              '<script src="app.min.js"></script>\n' +
+              '</body>');
             return content;
           }
+        }
+      },
+      cordova: {
+        files: [{
+          expand: true,
+          cwd: 'build/',
+          src: ['./**/*'],
+          dest: 'cordova/www/'
+        }]
+      }
+    },
+    // Wrap cordova commands into grunt task 
+    cordovacli: {
+      options: {
+        path: 'cordova'
+      },
+      // Create Cordova project, change id & name, add platforms & plugins
+      create: {
+        options: {
+          command: ['create', 'platform', 'plugin'],
+          platforms: ['android'],
+          plugins: ['device', 'media'],
+          id: 'fi.metropolia.wbma.app',
+          name: 'My Application'
+        }
+      },
+      build: {
+        options: {
+          command: 'build',
+          platforms: ['android']
+        }
+      },
+      run: {
+        options: {
+          command: 'run',
+          platforms: ['android']
         }
       }
     }
@@ -95,8 +152,13 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-cordovacli');
 
   // Default tasks
-  grunt.registerTask('default', ['concat', 'jshint', 'uglify', 'copy']);
+  grunt.registerTask('default', ['build']);
+  grunt.registerTask('build', ['clean:build', 'concat', 'jshint', 'uglify', 'copy:css', 'copy:fonts', 'copy:html']);
+  grunt.registerTask('run', ['build', 'clean:cordova', 'copy:cordova', 'cordovacli:run']);
+  grunt.registerTask('cordova', ['cordovacli:create', 'clean:cordova']);
 
 };
